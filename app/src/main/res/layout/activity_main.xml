@@ -1,23 +1,81 @@
-<LinearLayout
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/promoMessage"
+    <!-- Centered card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/promoCard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:text="Loading..."
-        android:layout_marginBottom="24dp" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:cardCornerRadius="16dp"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="6dp"
+        app:strokeColor="?attr/colorOutline"
+        app:strokeWidth="1dp">
 
-    <ImageView
-        android:id="@+id/promoImage"
-        android:layout_width="300dp"
-        android:layout_height="200dp"
-        android:scaleType="centerCrop" />
+        <!-- Use ConstraintLayout so we can enforce a 16:9 hero image -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="@dimen/banner_card_width"
+            android:layout_height="wrap_content">
 
-</LinearLayout>
+            <!-- Hero image fills the card width; fixed 16:9; centerCrop -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/bannerImage"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintDimensionRatio="16:9"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.Card.Top"
+                android:contentDescription="@string/app_name" />
+
+            <!-- Text block -->
+            <LinearLayout
+                android:id="@+id/textBlock"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/bannerImage"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/bannerTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Loading…"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:textSize="16sp"
+                    android:includeFontPadding="false"
+                    android:fontFamily="sans-serif" />
+
+                <TextView
+                    android:id="@+id/bannerSubtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text=""
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:includeFontPadding="false"
+                    android:fontFamily="sans-serif" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

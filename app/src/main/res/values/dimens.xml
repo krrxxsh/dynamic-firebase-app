@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fixed content width so the image can fill nicely -->
+    <dimen name="banner_card_width">320dp</dimen>
+</resources>
