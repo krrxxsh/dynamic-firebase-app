@@ -1,4 +1,4 @@
-package com.example.supabasepromo;
+package com.example.dynamic_supabase_app;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Change these to your Supabase project details
     private final String SUPABASE_URL = "https://rgrbnlzqyqktdtpvttbl.supabase.co/rest/v1/promo?select=message,image_url&order=id.desc&limit=1";
-    private final String SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI...";
+    private final String SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJncmJubHpxeXFrdGR0cHZ0dGJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NDI1NzIsImV4cCI6MjA3NDAxODU3Mn0.D64U_fZlaUpk7_BqTyj9xQuqxkyG3RJjBnpQEiTvZXA";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
