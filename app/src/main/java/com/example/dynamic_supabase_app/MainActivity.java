@@ -11,9 +11,14 @@ import com.bumptech.glide.Glide;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
+// NEW imports for polling
+import android.os.Handler;
+import android.os.Looper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,6 +27,19 @@ public class MainActivity extends AppCompatActivity {
     private ImageView bannerImage;
 
     private final SupabaseClient supabase = new SupabaseClient();
+
+    // Polling support
+    private final Handler pollHandler = new Handler(Looper.getMainLooper());
+    private final AtomicBoolean inFlight = new AtomicBoolean(false);
+    private final Runnable pollTask = new Runnable() {
+        @Override public void run() {
+            if (!inFlight.get()) {
+                fetchPromo();
+            }
+            // Re-run every 5 seconds (adjust interval as you like)
+            pollHandler.postDelayed(this, 5000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,12 +52,31 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(this, "MainActivity onCreate()", Toast.LENGTH_SHORT).show();
 
+        // Initial load
         fetchPromo();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Start polling loop
+        pollHandler.post(pollTask);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stop polling when not visible
+        pollHandler.removeCallbacks(pollTask);
+    }
+
     private void fetchPromo() {
+        // Prevent overlapping requests
+        if (!inFlight.compareAndSet(false, true)) return;
+
         supabase.fetchLatestPromo(new Callback() {
             @Override public void onFailure(Call call, IOException e) {
+                inFlight.set(false);
                 runOnUiThread(() -> {
                     bannerTitle.setText("Network error: " + e.getMessage());
                     bannerSubtitle.setVisibility(View.GONE);
@@ -48,17 +85,18 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override public void onResponse(Call call, Response response) throws IOException {
-                String body = response.body() != null ? response.body().string() : "";
-                if (!response.isSuccessful()) {
-                    Log.e("PROMO", "HTTP " + response.code() + " " + body);
-                    runOnUiThread(() -> {
-                        bannerTitle.setText("HTTP " + response.code());
-                        bannerSubtitle.setText(body);
-                        bannerSubtitle.setVisibility(View.VISIBLE);
-                    });
-                    return;
-                }
                 try {
+                    String body = response.body() != null ? response.body().string() : "";
+                    if (!response.isSuccessful()) {
+                        Log.e("PROMO", "HTTP " + response.code() + " " + body);
+                        runOnUiThread(() -> {
+                            bannerTitle.setText("HTTP " + response.code());
+                            bannerSubtitle.setText(body);
+                            bannerSubtitle.setVisibility(View.VISIBLE);
+                        });
+                        return;
+                    }
+
                     JSONArray arr = new JSONArray(body);
                     if (arr.length() == 0) {
                         runOnUiThread(() -> {
@@ -68,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
                         });
                         return;
                     }
+
                     JSONObject obj = arr.getJSONObject(0);
                     final String message = obj.optString("message", "—");
                     final String subtitle = obj.optString("subtitle", "");
@@ -86,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                             Glide.with(MainActivity.this)
                                     .load(imageUrl)
                                     .placeholder(android.R.color.darker_gray)
-                                    .centerCrop() // fill the 16:9 hero slot
+                                    .centerCrop() // fills the 16:9 hero slot in the layout
                                     .into(bannerImage);
                         } else {
                             bannerImage.setImageDrawable(null);
@@ -98,6 +137,8 @@ public class MainActivity extends AppCompatActivity {
                         bannerTitle.setText("Parse error");
                         bannerSubtitle.setVisibility(View.GONE);
                     });
+                } finally {
+                    inFlight.set(false);
                 }
             }
         });
